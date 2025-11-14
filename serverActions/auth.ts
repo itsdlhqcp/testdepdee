@@ -1736,6 +1736,49 @@ export async function sendPasswordResetLink(email: string) {
   }
 }
 
+export async function resetPassword(formData: {
+  password: string;
+  password_confirmation: string;
+  token: string;
+  email: string;
+}) {
+  console.log("RESET PASSWORD", "formData", { ...formData, password: "***", password_confirmation: "***" });
+
+  try {
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/user/reset-password`,
+      {
+        password: formData.password,
+        password_confirmation: formData.password_confirmation,
+        token: formData.token,
+        email: formData.email,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("Reset password response:", response.data);
+
+    return {
+      success: response.data?.success || false,
+      message: response.data?.message || "Password reset successfully",
+      data: response.data?.data || null,
+    };
+  } catch (err) {
+    const error = err as AxiosError<{ message?: string; success?: boolean }>;
+
+    console.log("Reset password error:", error.response?.data);
+
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to reset password",
+    };
+  }
+}
+
 export async function loginUser(formData: InputsSignIn) {
   try {
     const response = await axios.post(

@@ -3,17 +3,43 @@ import type { NextRequest } from "next/server";
 import { getCookie } from "./serverActions/cookies";
 
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  
+  // List of public routes that don't require authentication
+  // Handle both with and without trailing slash
+  const publicRoutes = ['/signin', '/signup', '/verify', '/forgot', '/reset-password'];
+  const normalizedPath = pathname.endsWith('/') && pathname !== '/' 
+    ? pathname.slice(0, -1) 
+    : pathname;
+  
+  // Allow access to public routes without authentication
+  if (publicRoutes.includes(normalizedPath)) {
+    console.log("✅ Allowing public route:", normalizedPath);
+    return NextResponse.next();
+  }
+  
   // Log the current request pathname
-  console.log("Current path:", request.nextUrl.origin);
+  console.log("🔒 Checking protected route:", normalizedPath);
   const token = await getCookie();
   if (!token) {
-    return NextResponse.redirect(request.nextUrl.origin + "/signin");
+    console.log("❌ No token found, redirecting to signin");
+    return NextResponse.redirect(new URL("/signin", request.url));
   }
+  
+  console.log("✅ Token found, allowing access");
+  return NextResponse.next();
 }
 
 export const config = {
   matcher: [
-    // match all routes except static files and APIs
-    "/((?!api|_next/static|_next/image|favicon.ico|signin|signup|verify|photos).*)",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - photos (public photos)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|photos).*)",
   ],
 };
