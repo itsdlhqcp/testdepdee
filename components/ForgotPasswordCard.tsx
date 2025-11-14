@@ -150,6 +150,101 @@
 
 
 
+// "use client";
+
+// import { zodResolver } from "@hookform/resolvers/zod";
+// import { useRouter } from "next/navigation";
+// import { useForm } from "react-hook-form";
+// import toast from "react-hot-toast";
+// import { z } from "zod";
+// import { motion } from "framer-motion";
+// import Link from "next/link";
+
+// const forgotPasswordSchema = z.object({
+//   email: z.string().email("Invalid email address"),
+// });
+
+// type Inputs = z.infer<typeof forgotPasswordSchema>;
+
+// export default function ForgotPasswordCard() {
+//   const router = useRouter();
+
+//   const {
+//     register,
+//     handleSubmit,
+//     formState: { errors },
+//   } = useForm<Inputs>({
+//     resolver: zodResolver(forgotPasswordSchema),
+//     mode: "onSubmit",
+//   });
+
+//   const onSubmit = (data: Inputs) => {
+//     toast.success("Password reset link sent to your email!");
+//     setTimeout(() => {
+//       router.push("/signin");
+//     }, 2000);
+//   };
+
+//   return (
+//     <motion.div
+//       initial={{ opacity: 0, y: 15 }}
+//       animate={{ opacity: 1, y: 0 }}
+//       transition={{ duration: 0.4, ease: "easeOut" }}
+//       className="w-fit h-fit bg-white/10 font-fira backdrop-blur-xl rounded-2xl border border-white/30 p-[30px] flex flex-col items-center justify-center gap-[30px]"
+//     >
+//       <form
+//         onSubmit={handleSubmit(onSubmit)}
+//         className="flex flex-col items-center gap-4 w-full"
+//       >
+//         <div className="text-center">
+//           <h2 className="text-brand font-inter font-semibold text-3xl mb-2">
+//             Trippldee
+//           </h2>
+//           <p className="text-sm text-black/80 max-w-[320px]">
+//             Enter your email address and we ll send you a link to reset your password
+//           </p>
+//         </div>
+
+//         <div className="flex flex-col gap-2 w-full">
+//           <label className="font-fira text-[16px] font-medium">Email Address</label>
+//           <input
+//             {...register("email")}
+//             type="email"
+//             placeholder="Enter your email"
+//             className="w-[320px] bg-[#fff3e5] h-[50px] text-black rounded-xl border border-[#c7b8a2] px-4 py-2 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#fd5f08]/30"
+//           />
+
+//           {errors.email?.message && (
+//             <span className="text-red-500 text-sm">{errors.email.message}</span>
+//           )}
+//         </div>
+
+//         <button
+//           type="submit"
+//           className="w-full h-[50px] bg-brand text-white font-medium rounded-xl hover:bg-orange-500 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+//         >
+//           Get the Link
+//         </button>
+//       </form>
+
+//       <div className="text-center">
+//         <p className="text-sm text-black/80">
+//           Remember your password?{" "}
+//           <Link href="/signin" className="text-brand hover:underline font-medium">
+//             Back to Login
+//           </Link>
+//         </p>
+//       </div>
+
+//       <p className="text-xs text-black/60 text-center max-w-[320px]">
+//         Check your spam folder if you don t receive the email within a few minutes
+//       </p>
+//     </motion.div>
+//   );
+// }
+
+
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -159,6 +254,9 @@ import toast from "react-hot-toast";
 import { z } from "zod";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useState } from "react";
+import { sendPasswordResetLink } from "@/serverActions/auth";
+
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -168,6 +266,7 @@ type Inputs = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPasswordCard() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -178,11 +277,26 @@ export default function ForgotPasswordCard() {
     mode: "onSubmit",
   });
 
-  const onSubmit = (data: Inputs) => {
-    toast.success("Password reset link sent to your email!");
-    setTimeout(() => {
-      router.push("/signin");
-    }, 2000);
+  const onSubmit = async (data: Inputs) => {
+    setIsLoading(true);
+    
+    try {
+      const result = await sendPasswordResetLink(data.email);
+      
+      if (result.success) {
+        toast.success(result.message || "Password reset link sent to your email!");
+        setTimeout(() => {
+          router.push("/signin");
+        }, 2000);
+      } else {
+        toast.error(result.message || "Failed to send reset link");
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred");
+      console.error("Forgot password error:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -201,7 +315,7 @@ export default function ForgotPasswordCard() {
             Trippldee
           </h2>
           <p className="text-sm text-black/80 max-w-[320px]">
-            Enter your email address and we ll send you a link to reset your password
+            Enter your email address and well send you a link to reset your password
           </p>
         </div>
 
@@ -211,7 +325,8 @@ export default function ForgotPasswordCard() {
             {...register("email")}
             type="email"
             placeholder="Enter your email"
-            className="w-[320px] bg-[#fff3e5] h-[50px] text-black rounded-xl border border-[#c7b8a2] px-4 py-2 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#fd5f08]/30"
+            disabled={isLoading}
+            className="w-[320px] bg-[#fff3e5] h-[50px] text-black rounded-xl border border-[#c7b8a2] px-4 py-2 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#fd5f08]/30 disabled:opacity-50 disabled:cursor-not-allowed"
           />
 
           {errors.email?.message && (
@@ -221,9 +336,10 @@ export default function ForgotPasswordCard() {
 
         <button
           type="submit"
+          disabled={isLoading}
           className="w-full h-[50px] bg-brand text-white font-medium rounded-xl hover:bg-orange-500 transition-all disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          Get the Link
+          {isLoading ? "Sending..." : "Get the Link"}
         </button>
       </form>
 
@@ -237,7 +353,7 @@ export default function ForgotPasswordCard() {
       </div>
 
       <p className="text-xs text-black/60 text-center max-w-[320px]">
-        Check your spam folder if you don t receive the email within a few minutes
+        Check your spam folder if you dont receive the email within a few minutes
       </p>
     </motion.div>
   );

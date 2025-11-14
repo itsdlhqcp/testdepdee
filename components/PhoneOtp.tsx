@@ -1,3 +1,4 @@
+
 "use client";
 
 import { verifyOTP } from "@/serverActions/auth";
@@ -16,35 +17,97 @@ const phoneOTPSchema = z.object({
     .min(4, "Verification code must be 4 digits"),
 });
 
+interface UserData {
+  phone: string | null;
+  email: string | null;
+  referralCode: string | null;
+}
+
 export default function PhoneVerifyCard() {
-  const [phoneNumber, setPhoneNumber] = useState<string | null>(null);
+  const [userData, setUserData] = useState<UserData>({
+    phone: null,
+    email: null,
+    referralCode: null,
+  });
   const [phoneVerified, setPhoneVerified] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-//   useEffect(() => {
-//     const localPhone = localStorage.getItem("phone");
+  useEffect(() => {
+    const getCookiesData = async () => {
+      try {
+        const response = await fetch("/api/cookies/get-user-data");
+        const data = await response.json();
 
-//     if (!localPhone) {
-//       toast.error("Phone Number not found, redirecting...");
-//       setTimeout(() => {
-//         router.push("/signup");
-//       }, 2000);
-//       return;
-//     }
+        if (!data.phone) {
+          toast.error("Phone Number not found, redirecting...");
+          setTimeout(() => {
+            router.push("/home");
+          }, 2000);
+          setIsLoading(false);
+          return;
+        }
 
-//     setPhoneNumber(localPhone);
-//   }, [router]);
+        setUserData({
+          phone: data.phone,
+          email: data.email || null,
+          referralCode: data.referral_code || null,
+        });
+      } catch (error) {
+        console.error("Error fetching cookies:", error);
+        toast.error("Failed to load session data, redirecting...");
+        setTimeout(() => {
+          router.push("/signup");
+        }, 2000);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    getCookiesData();
+  }, [router]);
 
   const handleNextClick = () => {
-    router.push("/signin");
+    router.push("/home");
   };
+
+  if (isLoading) {
+    return (
+      <div className="w-fit h-fit bg-white/10 font-fira backdrop-blur-xl rounded-2xl border border-white/30 p-[30px] flex flex-col items-center justify-center gap-[30px]">
+        <div className="flex items-center justify-center gap-2">
+          <svg
+            className="w-6 h-6 animate-spin text-brand"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+          <span className="text-black">Loading...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-fit h-fit bg-white/10 font-fira backdrop-blur-xl rounded-2xl border border-white/30 p-[30px] flex flex-col items-center justify-center gap-[30px]">
       {/* Phone Number OTP Section */}
-      {phoneNumber && (
+      {userData.phone && (
         <PhoneOTP
-          phone_number={phoneNumber}
+          phone_number={userData.phone}
+          referralCode={userData.referralCode}
           onVerifySuccess={() => setPhoneVerified(true)}
         />
       )}
@@ -75,9 +138,11 @@ function Slot(props: SlotProps) {
 
 function PhoneOTP({
   phone_number,
+  referralCode,
   onVerifySuccess,
 }: {
   phone_number: string;
+  referralCode: string | null;
   onVerifySuccess: () => void;
 }) {
   type Inputs = z.infer<typeof phoneOTPSchema>;
@@ -95,6 +160,7 @@ function PhoneOTP({
       const data = {
         phone_number: phone_number as string,
         otp: formData.phoneOTP,
+        reference_code: referralCode || undefined,
       };
       return verifyOTP(data);
     },
@@ -121,11 +187,14 @@ function PhoneOTP({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="flex flex-col items-center gap-4"
+      className="flex flex-col items-center gap-4 mt-4"
     >
       <h2 className="text-2xl font-semibold text-orange-500">
         Phone Number OTP
       </h2>
+      <p className="text-sm text-black/80 max-w-[320px]">
+           You need to verify your phone number to continue
+          </p>
       <Controller
         control={control}
         name="phoneOTP"

@@ -9,11 +9,14 @@ export default function ForgotPassword() {
       <div className="bg-[url(/photos/Fork.png)] bg-no-repeat bg-center bg-cover"></div>
       <div className="bg-[url(/photos/couple-phone.png)] bg-no-repeat bg-center bg-cover"></div>
       <div className="bg-[url(/photos/burger.png)] bg-no-repeat bg-center bg-cover"></div>
-      <div className="w-[100dvw] h-[100dvh] fixed center-div">
+      
+      {/* Fixed centering div - using Tailwind utilities instead of custom class */}
+      <div className="w-[100dvw] h-[100dvh] fixed inset-0 flex items-center justify-center z-10">
         <Providers>
           <ForgotPasswordCard />
         </Providers>
       </div>
+      
       <Toaster />
     </div>
   );
