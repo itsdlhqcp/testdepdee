@@ -16,7 +16,7 @@ const BMI = () => {
 
   const getBMICategory = (bmi: number) => {
     if (bmi < 18.5)
-      return { category: "Underweight", color: "#3B82F6", rotation: -60 };
+      return { categoryx: "Underweight", color: "#3B82F6", rotation: -60 };
     if (bmi < 25)
       return { category: "Normal", color: "#10B981", rotation: -20 };
     if (bmi < 30)
