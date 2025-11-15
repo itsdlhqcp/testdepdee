@@ -165,7 +165,7 @@ function PhoneOTP({
         onVerifySuccess();
         // Auto-redirect after successful verification
         setTimeout(() => {
-          router.push("/signin");
+          router.push("/home");
         }, 1500);
       } else {
         toast.error(message);
