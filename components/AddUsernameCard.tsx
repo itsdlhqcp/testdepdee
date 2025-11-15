@@ -868,17 +868,10 @@ export default function AddUsernameCard() {
         console.log("🔍 Phone verified status:", userData.phone_verified);
         console.log("🔍 Phone verified type:", typeof userData.phone_verified);
 
-        if (userData.phone_verified === false) {
-          console.log("➡️ Redirecting to /verifyphone (phone not verified)");
-          setTimeout(() => {
-            router.push("/verifyphone");
-          }, 1500);
-        } else {
-          console.log("➡️ Redirecting to /home (phone verified)");
-          setTimeout(() => {
-            router.push("/home");
-          }, 1500);
-        }
+        console.log("➡️ Redirecting to /home");
+        setTimeout(() => {
+          router.push("/home");
+        }, 1500);
       } else {
         toast.error(data.message || "Failed to set username");
 
@@ -913,17 +906,10 @@ export default function AddUsernameCard() {
     console.log("⏭️ Skip clicked - User data:", userData);
     console.log("🔍 Phone verified status:", userData.phone_verified);
     
-    if (userData.phone_verified === false) {
-      console.log("➡️ Redirecting to /verifyphone (phone not verified)");
-      setTimeout(() => {
-        router.push("/verifyphone");
-      }, 1000);
-    } else {
-      console.log("➡️ Redirecting to /home (phone verified)");
-      setTimeout(() => {
-        router.push("/home");
-      }, 1000);
-    }
+    console.log("➡️ Redirecting to /home");
+    setTimeout(() => {
+      router.push("/home");
+    }, 1000);
   };
 
   if (isLoading) {

@@ -67,9 +67,6 @@ export default function PhoneVerifyCard() {
     getCookiesData();
   }, [router]);
 
-  const handleNextClick = () => {
-    router.push("/home");
-  };
 
   if (isLoading) {
     return (
@@ -112,14 +109,6 @@ export default function PhoneVerifyCard() {
         />
       )}
 
-      {/* Next Button - Active only after phone verification */}
-      <button
-        onClick={handleNextClick}
-        disabled={!phoneVerified}
-        className="w-[320px] py-3 bg-orange-500 text-white font-medium rounded-md hover:bg-orange-600 transition-all cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed"
-      >
-        Next
-      </button>
     </div>
   );
 }
@@ -145,6 +134,9 @@ function PhoneOTP({
   referralCode: string | null;
   onVerifySuccess: () => void;
 }) {
+  const [isVerified, setIsVerified] = useState(false);
+  const router = useRouter();
+  
   type Inputs = z.infer<typeof phoneOTPSchema>;
   const {
     handleSubmit,
@@ -168,8 +160,13 @@ function PhoneOTP({
       const { success, message } = data;
       if (success) {
         toast.success(message);
+        setIsVerified(true);
         // Trigger callback to enable Next button
         onVerifySuccess();
+        // Auto-redirect after successful verification
+        setTimeout(() => {
+          router.push("/signin");
+        }, 1500);
       } else {
         toast.error(message);
       }
@@ -201,7 +198,9 @@ function PhoneOTP({
         render={({ field: { onChange, value } }) => (
           <OTPInput
             onChange={onChange}
+            value={value}
             maxLength={4}
+            disabled={isVerified}
             containerClassName="flex gap-4"
             className="focus-visible:outline-none focus-visible:ring-0"
             render={({ slots }) => (
@@ -226,13 +225,20 @@ function PhoneOTP({
       </button>
       <button
         type="submit"
-        disabled={mutation.isPending}
+        disabled={mutation.isPending || isVerified}
         className="w-[320px] py-3 bg-orange-500 text-white font-medium rounded-md hover:bg-orange-600 transition-all cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed relative overflow-hidden"
       >
         {mutation.isPending ? (
           <div className="flex items-center justify-center gap-2">
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
             <span>Verifying...</span>
+          </div>
+        ) : isVerified ? (
+          <div className="flex items-center justify-center gap-2">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Verified</span>
           </div>
         ) : (
           "Verify"

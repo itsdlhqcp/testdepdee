@@ -1438,6 +1438,7 @@ import axios, { AxiosError } from "axios";
 import { cookies } from "next/headers";
 import type { Inputs } from "@/app/(auth)/components/signupForm";
 import type { Inputs as InputsSignIn } from "@/app/(auth)/components/signinForm";
+import { setUserCookiesOptional } from "./cookies";
 
 // Helper function to set user cookies
 async function setUserCookies(email: string, phone: string, referralCode: string) {
@@ -1632,14 +1633,19 @@ export async function registerUser(formData: Inputs) {
         await setTokenCookie(access_token);
       }
 
-      // 👉 Combine country code + phone number
-      const fullPhone =
-        user?.country_code && user?.phone_number
-          ? `${user.country_code}${user.phone_number}`
-          : null;
+      // Store user cookies if any data is available
+      if (user) {
+        const fullPhone =
+          user?.country_code && user?.phone_number
+            ? `${user.country_code}${user.phone_number}`
+            : null;
 
-      if (user?.email && fullPhone && user?.referral_code) {
-        await setUserCookies(user.email, fullPhone, user.referral_code);
+        // Store cookies individually - each one is optional
+        await setUserCookiesOptional(
+          user.email || null,
+          fullPhone,
+          user.referral_code || null
+        );
       }
     }
 
@@ -1795,14 +1801,19 @@ export async function loginUser(formData: InputsSignIn) {
         await setTokenCookie(access_token);
       }
 
-      // 👉 Combine country code + phone number (same as registerUser)
-      const fullPhone =
-        user?.country_code && user?.phone_number
-          ? `${user.country_code}${user.phone_number}`
-          : null;
+      // Store user cookies if any data is available
+      if (user) {
+        const fullPhone =
+          user?.country_code && user?.phone_number
+            ? `${user.country_code}${user.phone_number}`
+            : null;
 
-      if (user?.email && fullPhone && user?.referral_code) {
-        await setUserCookies(user.email, fullPhone, user.referral_code);
+        // Store cookies individually - each one is optional
+        await setUserCookiesOptional(
+          user.email || null,
+          fullPhone,
+          user.referral_code || null
+        );
       }
     }
 

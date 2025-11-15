@@ -417,10 +417,12 @@ export function SignInForm() {
         const token = response.data?.data?.access_token;
         const isFirstLogin = response.data?.data?.is_first_login;
         const isPhoneNumberVerified = response.data?.data?.user?.phone_number_verified || false;
+        const phoneNumber = response.data?.data?.user?.phone_number || null;
 
         console.log("Login response:", response);
         console.log("Token:", token);
         console.log("Phone number verified:", isPhoneNumberVerified);
+        console.log("Phone number:", phoneNumber);
         console.log("Is first login:", isFirstLogin);
 
         if (token) {
@@ -428,17 +430,17 @@ export function SignInForm() {
           await setAuthCookies(token, isPhoneNumberVerified);
           console.log("Auth cookies set successfully");
 
-          // Route based on is_first_login status
-
-           if(isFirstLogin === false && isPhoneNumberVerified === false) {
-              router.push("/verifyphone");
-           }else{
-              if (isFirstLogin === true) {
-                router.push("/addusername");
-              } else {
-                router.push("/home");
-              }
-           }
+          // Route based on is_first_login status and phone number
+          // If phone_number is null, go to /home instead of /verifyphone
+          if (isFirstLogin === false && isPhoneNumberVerified === false && phoneNumber !== null) {
+            router.push("/verifyphone");
+          } else {
+            if (isFirstLogin === true) {
+              router.push("/addusername");
+            } else {
+              router.push("/home");
+            }
+          }
 
          
         } else {

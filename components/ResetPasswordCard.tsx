@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { resetPassword } from "@/serverActions/auth";
+import { Eye, EyeOff } from "lucide-react";
 
 const resetPasswordSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
@@ -26,6 +27,10 @@ export default function ResetPasswordCard() {
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
+  
+  // Password visibility states
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     const tokenParam = searchParams.get("token");
@@ -126,13 +131,26 @@ export default function ResetPasswordCard() {
 
         <div className="flex flex-col gap-2 w-full">
           <label className="font-fira text-[16px] font-medium">New Password</label>
-          <input
-            {...register("password")}
-            type="password"
-            placeholder="Enter new password"
-            disabled={isLoading}
-            className="w-[320px] bg-[#fff3e5] h-[50px] text-black rounded-xl border border-[#c7b8a2] px-4 py-2 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#fd5f08]/30 disabled:opacity-50 disabled:cursor-not-allowed"
-          />
+          <div className="relative">
+            <input
+              {...register("password")}
+              type={showPassword ? "text" : "password"}
+              placeholder="Enter new password"
+              disabled={isLoading}
+              className="w-[320px] bg-[#fff3e5] h-[50px] text-black rounded-xl border border-[#c7b8a2] px-4 py-2 pr-12 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#fd5f08]/30 disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              {showPassword ? (
+                <EyeOff className="w-5 h-5" />
+              ) : (
+                <Eye className="w-5 h-5" />
+              )}
+            </button>
+          </div>
           {errors.password?.message && (
             <span className="text-red-500 text-sm">{errors.password.message}</span>
           )}
@@ -140,13 +158,26 @@ export default function ResetPasswordCard() {
 
         <div className="flex flex-col gap-2 w-full">
           <label className="font-fira text-[16px] font-medium">Confirm Password</label>
-          <input
-            {...register("password_confirmation")}
-            type="password"
-            placeholder="Confirm new password"
-            disabled={isLoading}
-            className="w-[320px] bg-[#fff3e5] h-[50px] text-black rounded-xl border border-[#c7b8a2] px-4 py-2 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#fd5f08]/30 disabled:opacity-50 disabled:cursor-not-allowed"
-          />
+          <div className="relative">
+            <input
+              {...register("password_confirmation")}
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirm new password"
+              disabled={isLoading}
+              className="w-[320px] bg-[#fff3e5] h-[50px] text-black rounded-xl border border-[#c7b8a2] px-4 py-2 pr-12 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#fd5f08]/30 disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800 transition-colors"
+            >
+              {showConfirmPassword ? (
+                <EyeOff className="w-5 h-5" />
+              ) : (
+                <Eye className="w-5 h-5" />
+              )}
+            </button>
+          </div>
           {errors.password_confirmation?.message && (
             <span className="text-red-500 text-sm">{errors.password_confirmation.message}</span>
           )}
